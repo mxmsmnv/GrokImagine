@@ -10,7 +10,7 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
     public static function getModuleInfo() {
         return array(
             'title' => 'Grok Imagine',
-            'version' => 175,
+            'version' => 185,
             'icon' => 'camera',
             'author' => 'Maxim Alex',
             'summary' => 'Generate AI images directly in your image fields using x.ai (Grok).',
@@ -23,6 +23,7 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
         if($this->wire('input')->post('grok_action') === 'generate') {
             $this->handleGrokRequest();
         }
+
         $this->addHookAfter('InputfieldImage::render', $this, 'renderGrokInterface');
         $this->addHookBefore('InputfieldImage::processInput', $this, 'processGrokInput');
         $this->addHookBefore('ProcessPageEdit::execute', $this, 'addAssets');
@@ -39,6 +40,7 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
         $prompt = $this->wire('input')->post->text('prompt');
         $aspect = $this->wire('input')->post->text('aspect') ?: '16:9';
         $index  = $this->wire('input')->post->int('index');
+        $pageId = $this->wire('input')->post->int('page_id');
         
         $model = $this->grokModel ?: 'grok-imagine-image-pro';
         $resolution = $this->grokResolution ?: '1k';
@@ -47,6 +49,23 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
             header('Content-Type: application/json');
             die(json_encode(['error' => 'API Key missing']));
         }
+
+        // Resolve system prompt with page field placeholders
+        $systemPrompt = trim($this->systemPrompt ?? '');
+        if($systemPrompt && $pageId) {
+            $page = $this->wire('pages')->get($pageId);
+            if($page && $page->id) {
+                $systemPrompt = preg_replace_callback('/%([a-zA-Z0-9_]+)%/', function($matches) use ($page) {
+                    $fieldName = $matches[1];
+                    $value = $page->get($fieldName);
+                    if($value instanceof WireArray) return (string) $value->first();
+                    return $value ? (string) $value : $matches[0];
+                }, $systemPrompt);
+            }
+        }
+
+        // System prompt is already included in the user's prompt (pre-filled in the input field)
+        // No need to prepend here
 
         $variations = ["", ", different angle", ", alternative perspective", ", close-up shot", ", wide shot"];
         $prompt .= $variations[$index % count($variations)];
@@ -79,11 +98,30 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
         $useFields = is_array($this->useField) ? $this->useField : [];
         if(!in_array($inputfield->name, $useFields)) return;
 
+        $page = $inputfield->hasPage;
+        $pageId = $page ? $page->id : 0;
+
+        // Resolve system prompt placeholders to pre-fill the input field
+        $systemPrompt = trim($this->systemPrompt ?? '');
+        $prefillValue = '';
+        if($systemPrompt) {
+            $resolved = $systemPrompt;
+            if($page && $page->id) {
+                $resolved = preg_replace_callback('/%([a-zA-Z0-9_]+)%/', function($matches) use ($page) {
+                    $fieldName = $matches[1];
+                    $value = $page->get($fieldName);
+                    if($value instanceof WireArray) return (string) $value->first();
+                    return $value ? (string) $value : $matches[0];
+                }, $systemPrompt);
+            }
+            $prefillValue = htmlspecialchars($resolved, ENT_QUOTES);
+        }
+
         $markup = "
-        <div class='GrokImagine-container' data-name='{$inputfield->name}' style='border-top: 1px solid #ddd; margin-top: 15px; padding-top: 15px;'>
+        <div class='GrokImagine-container' data-name='{$inputfield->name}' data-page-id='{$pageId}' style='border-top: 1px solid #ddd; margin-top: 15px; padding-top: 15px;'>
             <div class='uk-grid-collapse uk-grid' uk-grid>
                 <div class='uk-width-expand@s uk-width-1-1'>
-                    <input type='text' class='grok-prompt uk-input' placeholder='Describe image...' style='border-radius: 4px 0 0 4px;'>
+                    <input type='text' class='grok-prompt uk-input' value='{$prefillValue}' placeholder='Describe image...' style='border-radius: 4px 0 0 4px;'>
                 </div>
                 <div class='uk-width-auto@s'>
                     <select class='grok-aspect uk-select' style='border-radius: 0; min-width: 75px; border-left:0;'>
@@ -153,6 +191,15 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
 
     public function getModuleConfigInputfields(array $data) {
         $inputfields = new InputfieldWrapper();
+
+        $f = $this->wire('modules')->get('InputfieldTextarea');
+        $f->name = 'systemPrompt';
+        $f->label = 'System Prompt';
+        $f->description = 'Optional context prepended to every prompt before sending to the API. Use `%fieldname%` placeholders to insert values from the current page (e.g. `%title%`, `%summary%`).';
+        $f->notes = 'Example: "Professional product photo of %title%, studio lighting, white background"';
+        $f->rows = 3;
+        $f->value = $data['systemPrompt'] ?? '';
+        $inputfields->add($f);
 
         $f = $this->wire('modules')->get('InputfieldText');
         $f->name = 'grokApiKey'; 

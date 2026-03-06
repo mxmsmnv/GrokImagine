@@ -9,6 +9,7 @@
             const num = parseInt($container.find('.grok-num').val());
             const aspect = $container.find('.grok-aspect').val();
             const fieldName = $container.data('name');
+            const pageId = $container.data('page-id') || 0;
 
             if(!prompt) return;
 
@@ -30,7 +31,7 @@
                 $.ajax({
                     url: window.location.href,
                     method: 'POST',
-                    data: { grok_action: 'generate', prompt: prompt, index: i, aspect: aspect },
+                    data: { grok_action: 'generate', prompt: prompt, index: i, aspect: aspect, page_id: pageId },
                     success: function(response) {
                         if(response.data && response.data[0]) {
                             const item = response.data[0];
