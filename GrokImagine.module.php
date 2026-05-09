@@ -10,7 +10,7 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
     public static function getModuleInfo() {
         return array(
             'title' => 'Grok Imagine',
-            'version' => 185,
+            'version' => 186,
             'icon' => 'camera',
             'author' => 'Maxim Alex',
             'summary' => 'Generate AI images directly in your image fields using x.ai (Grok).',
@@ -173,7 +173,9 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
         $page->of(false);
         $field_value = $page->getUnformatted($field_name);
         foreach ($grok_data as $index => $url_string) {
-            list($url, $desc) = explode('*', $url_string);
+            $parts = explode('*', $url_string, 2);
+            $url = $parts[0];
+            $desc = $parts[1] ?? '';
             try {
                 $newFileName = $page->id . "-" . time() . "-" . $index . ".jpg";
                 $http = new WireHttp();
@@ -181,7 +183,7 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
                 if(!is_dir(dirname($tempPath))) wireMkdir(dirname($tempPath));
                 if($http->download($url, $tempPath)) {
                     $pagefile = new Pageimage($field_value, $tempPath);
-                    $pagefile->description = $desc;
+                    if($desc !== '') $pagefile->description = $desc;
                     $field_value->add($pagefile);
                     unlink($tempPath);
                 }

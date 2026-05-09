@@ -68,7 +68,6 @@
             const $input = $(this).find('.grok-hidden-input');
             const $badge = $(this).find('.grok-badge');
             const fieldName = $(this).closest('.GrokImagine-container').data('name');
-            const prompt = $(this).closest('.GrokImagine-container').find('.grok-prompt').val();
 
             if($input.attr('name')) {
                 $input.removeAttr('name');
@@ -76,7 +75,7 @@
                 $badge.hide();
             } else {
                 $input.attr('name', 'grok_urls_' + fieldName + '[]');
-                $input.val($input.data('url') + '*' + prompt);
+                $input.val($input.data('url'));
                 $card.css('border-color', '#2db7f5');
                 $badge.show();
             }

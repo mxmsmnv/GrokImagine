@@ -1,6 +1,6 @@
 # GrokImagine
 
-**Version:** 1.8.5  
+**Version:** 1.8.6  
 **Author:** Maxim Alex  
 **Website:** [smnv.org](https://smnv.org)  
 **Email:** maxim@smnv.org  
