@@ -1,10 +1,10 @@
 # GrokImagine
 
-**Version:** 1.8.6  
+**Version:** 1.8.7  
 **Author:** Maxim Alex  
 **Website:** [smnv.org](https://smnv.org)  
 **Email:** maxim@smnv.org  
-**Release Date:** March 5, 2026  
+**Release Date:** May 9, 2026  
 **License:** MIT
 
 GrokImagine is a ProcessWire module that allows you to generate high-quality AI images directly within your `Pageimage` fields using the **x.ai (Grok)** API. 
@@ -15,7 +15,7 @@ GrokImagine is a ProcessWire module that allows you to generate high-quality AI 
 - **Batch Generation**: Generate up to 4 variations at once with a single prompt.
 - **Smart Variations**: Automatically adds subtle prompt differences to ensure variety in batch results.
 - **Format Support**: Choose between 16:9, 1:1, 9:16, and 4:3 aspect ratios.
-- **Model Selection**: Supports `grok-imagine-image-pro` and `grok-imagine-image`.
+- **Model Selection**: Supports `grok-imagine-image-quality` and `grok-imagine-image`.
 - **Resolution Control**: Toggle between 1k and 2k resolutions.
 - **Interactive UI**: Preview results, select the ones you like, and save them directly to the page.
 - **System Prompt**: Define a reusable base prompt in module settings, pre-filled into the input field on every page. Supports `%fieldname%` placeholders (e.g. `%title%`) that are automatically resolved from the current page's field values.

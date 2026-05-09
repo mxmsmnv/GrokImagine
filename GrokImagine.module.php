@@ -10,7 +10,7 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
     public static function getModuleInfo() {
         return array(
             'title' => 'Grok Imagine',
-            'version' => 186,
+            'version' => 187,
             'icon' => 'camera',
             'author' => 'Maxim Alex',
             'summary' => 'Generate AI images directly in your image fields using x.ai (Grok).',
@@ -42,7 +42,8 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
         $index  = $this->wire('input')->post->int('index');
         $pageId = $this->wire('input')->post->int('page_id');
         
-        $model = $this->grokModel ?: 'grok-imagine-image-pro';
+        $model = $this->grokModel ?: 'grok-imagine-image-quality';
+        if($model === 'grok-imagine-image-pro') $model = 'grok-imagine-image-quality';
         $resolution = $this->grokResolution ?: '1k';
 
         if(!$apiKey) {
@@ -215,10 +216,12 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
         $f->name = 'grokModel';
         $f->label = 'Model';
         $f->addOptions([
-            'grok-imagine-image-pro' => 'grok-imagine-image-pro (Premium)',
+            'grok-imagine-image-quality' => 'grok-imagine-image-quality (Quality)',
             'grok-imagine-image' => 'grok-imagine-image (Standard)'
         ]);
-        $f->value = $data['grokModel'] ?? 'grok-imagine-image-pro';
+        $selectedModel = $data['grokModel'] ?? 'grok-imagine-image-quality';
+        if($selectedModel === 'grok-imagine-image-pro') $selectedModel = 'grok-imagine-image-quality';
+        $f->value = $selectedModel;
         $f->columnWidth = 50;
         $inputfields->add($f);
 
