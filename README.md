@@ -1,10 +1,12 @@
 # GrokImagine
 
 **Version:** 1.8.7  
-**Author:** Maxim Alex  
+
+**Author:** Maxim Semenov  
 **Website:** [smnv.org](https://smnv.org)  
+**Email:** [maxim@smnv.org](mailto:maxim@smnv.org)
+
 If this project helps your work, consider supporting future development: [GitHub Sponsors](https://github.com/sponsors/mxmsmnv) or [smnv.org/sponsor](https://smnv.org/sponsor/).  
-**Email:** maxim@smnv.org  
 **Release Date:** May 9, 2026  
 **License:** MIT
 

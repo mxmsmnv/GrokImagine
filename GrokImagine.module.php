@@ -3,7 +3,7 @@ namespace ProcessWire;
 
 /**
  * GrokImagine: AI Image Generation for ProcessWire via x.ai
- * Developer: Maxim Alex
+ * Developer: Maxim Semenov <maxim@smnv.org> (smnv.org)
  */
 class GrokImagine extends InputfieldImage implements ConfigurableModule {
 
@@ -12,7 +12,8 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
             'title' => 'Grok Imagine',
             'version' => 187,
             'icon' => 'camera',
-            'author' => 'Maxim Alex',
+            'author' => 'Maxim Semenov',
+            'href'     => 'https://smnv.org',
             'summary' => 'Generate AI images directly in your image fields using x.ai (Grok).',
             'autoload' => 'template=admin',
             'requires' => 'ProcessWire>=3.0.0'
