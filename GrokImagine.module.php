@@ -10,7 +10,7 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
     public static function getModuleInfo() {
         return array(
             'title' => 'Grok Imagine',
-            'version' => 187,
+            'version' => 188,
             'icon' => 'camera',
             'author' => 'Maxim Semenov',
             'href'     => 'https://smnv.org',
@@ -44,7 +44,9 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
         $pageId = $this->wire('input')->post->int('page_id');
         
         $model = $this->grokModel ?: 'grok-imagine-image-quality';
-        if($model === 'grok-imagine-image-pro') $model = 'grok-imagine-image-quality';
+        if(in_array($model, ['grok-imagine-image-pro', 'grok-imagine-image'], true)) {
+            $model = 'grok-imagine-image-quality';
+        }
         $resolution = $this->grokResolution ?: '1k';
 
         if(!$apiKey) {
@@ -98,7 +100,8 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
     protected function renderGrokInterface(HookEvent $event) {
         $inputfield = $event->object;
         $useFields = is_array($this->useField) ? $this->useField : [];
-        if(!in_array($inputfield->name, $useFields)) return;
+        $fieldName = preg_replace('/_repeater\d+$/', '', $inputfield->name);
+        if(!in_array($fieldName, $useFields)) return;
 
         $page = $inputfield->hasPage;
         $pageId = $page ? $page->id : 0;
@@ -217,11 +220,12 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
         $f->name = 'grokModel';
         $f->label = 'Model';
         $f->addOptions([
-            'grok-imagine-image-quality' => 'grok-imagine-image-quality (Quality)',
-            'grok-imagine-image' => 'grok-imagine-image (Standard)'
+            'grok-imagine-image-quality' => 'grok-imagine-image-quality (Quality)'
         ]);
         $selectedModel = $data['grokModel'] ?? 'grok-imagine-image-quality';
-        if($selectedModel === 'grok-imagine-image-pro') $selectedModel = 'grok-imagine-image-quality';
+        if(in_array($selectedModel, ['grok-imagine-image-pro', 'grok-imagine-image'], true)) {
+            $selectedModel = 'grok-imagine-image-quality';
+        }
         $f->value = $selectedModel;
         $f->columnWidth = 50;
         $inputfields->add($f);
