@@ -10,7 +10,7 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
     public static function getModuleInfo() {
         return array(
             'title' => 'Grok Imagine',
-            'version' => 188,
+            'version' => 189,
             'icon' => 'camera',
             'author' => 'Maxim Semenov',
             'href'     => 'https://smnv.org',
@@ -43,12 +43,6 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
         $index  = $this->wire('input')->post->int('index');
         $pageId = $this->wire('input')->post->int('page_id');
         
-        $model = $this->grokModel ?: 'grok-imagine-image-quality';
-        if(in_array($model, ['grok-imagine-image-pro', 'grok-imagine-image'], true)) {
-            $model = 'grok-imagine-image-quality';
-        }
-        $resolution = $this->grokResolution ?: '1k';
-
         if(!$apiKey) {
             header('Content-Type: application/json');
             die(json_encode(['error' => 'API Key missing']));
@@ -71,16 +65,40 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
         // System prompt is already included in the user's prompt (pre-filled in the input field)
         // No need to prepend here
 
+        $payload = $this->buildGenerationPayload($prompt, $aspect, $index);
+        $response = $this->sendGenerationRequest($payload, $apiKey);
+
+        header('Content-Type: application/json');
+        echo $response;
+        exit;
+    }
+
+    /**
+     * Build the provider payload without performing any network I/O.
+     * Hookable so integrations can validate or adjust the request deterministically.
+     */
+    public function ___buildGenerationPayload(string $prompt, string $aspect = '16:9', int $index = 0): array {
+        $model = $this->grokModel ?: 'grok-imagine-image-quality';
+        if(in_array($model, ['grok-imagine-image-pro', 'grok-imagine-image'], true)) {
+            $model = 'grok-imagine-image-quality';
+        }
         $variations = ["", ", different angle", ", alternative perspective", ", close-up shot", ", wide shot"];
         $prompt .= $variations[$index % count($variations)];
 
-        $payload = [
+        return [
             'model' => $model,
             'prompt' => $prompt,
             'n' => 1,
             'aspect_ratio' => $aspect,
-            'resolution' => $resolution
+            'resolution' => $this->grokResolution ?: '1k',
         ];
+    }
+
+    /**
+     * Send one generation request. Kept hookable to allow deterministic local
+     * integration tests and application-specific transports without network I/O.
+     */
+    public function ___sendGenerationRequest(array $payload, string $apiKey): string {
 
         $ch = curl_init('https://api.x.ai/v1/images/generations');
         curl_setopt_array($ch, [
@@ -92,9 +110,8 @@ class GrokImagine extends InputfieldImage implements ConfigurableModule {
         ]);
 
         $response = curl_exec($ch);
-        header('Content-Type: application/json');
-        echo $response;
-        exit;
+        curl_close($ch);
+        return is_string($response) ? $response : '';
     }
 
     protected function renderGrokInterface(HookEvent $event) {

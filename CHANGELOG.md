@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.8.9] - 2026-09-30
+### Fixed
+- Extracted payload construction and the provider request into hookable methods,
+  allowing deterministic local workflow tests without contacting xAI.
+
 ## [1.8.8] - 2026-07-18
 ### Added
 - Olivia-compatible `AGENTS.md` with site-building guidance, request contracts and safety boundaries.
